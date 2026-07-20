@@ -55,8 +55,8 @@ class TubeGrab(ctk.CTk):
         super().__init__()
         ctk.set_appearance_mode("dark")
         self.title(APP_NAME)
-        self.geometry("920x680")
-        self.minsize(820, 600)
+        self.geometry("920x720")
+        self.minsize(820, 640)
 
         self.events = queue.Queue()
         self.cancel_flag = threading.Event()
@@ -148,6 +148,33 @@ class TubeGrab(ctk.CTk):
                       text_color=("#111", "#eee"),
                       command=self.choose_dir).pack(side="left", padx=(10, 0))
 
+        # Subtitles row
+        srow = ctk.CTkFrame(opts, fg_color="transparent")
+        srow.pack(fill="x", padx=16, pady=(0, 14))
+        self.subs_var = tk.BooleanVar(value=False)
+        self.subs_sw = ctk.CTkSwitch(
+            srow, text="Subtitles (.srt)", variable=self.subs_var,
+            progress_color=ACCENT, font=ctk.CTkFont(size=13),
+            command=self._refresh_subs)
+        self.subs_sw.pack(side="left")
+        ctk.CTkLabel(srow, text="Languages", text_color=MUTED,
+                     font=ctk.CTkFont(size=13)).pack(side="left", padx=(24, 8))
+        self.sublang_var = tk.StringVar(value="en")
+        self.sublang_entry = ctk.CTkEntry(
+            srow, textvariable=self.sublang_var, width=140, height=36,
+            corner_radius=10, fg_color=FIELD, border_width=0,
+            font=ctk.CTkFont(size=13), state="disabled")
+        self.sublang_entry.pack(side="left")
+        ctk.CTkLabel(srow, text="comma-separated codes, e.g. en,hi,fr",
+                     text_color=MUTED, font=ctk.CTkFont(size=12)).pack(
+                         side="left", padx=(8, 0))
+        self.autocc_var = tk.BooleanVar(value=True)
+        self.autocc_chk = ctk.CTkCheckBox(
+            srow, text="Include auto-generated (CC)", variable=self.autocc_var,
+            fg_color=ACCENT, hover_color=ACCENT_HOVER,
+            font=ctk.CTkFont(size=13), state="disabled")
+        self.autocc_chk.pack(side="right")
+
         # Action row
         act = ctk.CTkFrame(root, fg_color="transparent")
         act.pack(fill="x", pady=(16, 0))
@@ -190,6 +217,11 @@ class TubeGrab(ctk.CTk):
         table = VIDEO_QUALITIES if self.mode_var.get() == "Video" else AUDIO_QUALITIES
         self.quality_menu.configure(values=list(table))
         self.quality_var.set(next(iter(table)))
+
+    def _refresh_subs(self):
+        state = "normal" if self.subs_var.get() else "disabled"
+        self.sublang_entry.configure(state=state)
+        self.autocc_chk.configure(state=state)
 
     def _log(self, msg):
         self.log.configure(state="normal")
@@ -263,6 +295,17 @@ class TubeGrab(ctk.CTk):
                     "preferredcodec": codec,
                     "preferredquality": bitrate,
                 }]
+
+        if self.subs_var.get():
+            langs = [l.strip() for l in self.sublang_var.get().split(",") if l.strip()]
+            ydl_opts["writesubtitles"] = True
+            ydl_opts["writeautomaticsub"] = self.autocc_var.get()
+            ydl_opts["subtitleslangs"] = langs or ["en"]
+            ydl_opts["subtitlesformat"] = "best"
+            ydl_opts.setdefault("postprocessors", []).append(
+                {"key": "FFmpegSubtitlesConvertor", "format": "srt"})
+            self._log(f"Subtitles enabled: {', '.join(langs or ['en'])}"
+                      + (" (incl. auto-CC)" if self.autocc_var.get() else ""))
 
         threading.Thread(target=self._download_worker, args=(url, ydl_opts),
                          daemon=True).start()

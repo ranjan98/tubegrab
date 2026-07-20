@@ -21,6 +21,7 @@ A sleek, dark-mode desktop GUI for downloading YouTube **videos**, **audio**, an
 - **Modern dark UI** — rounded cards, segmented controls, and a red accent theme (customtkinter)
 - **Video downloads** with quality caps: Best available, 4K, 1080p, 720p, 480p (merged to `.mp4`)
 - **Audio-only downloads**: best original format, MP3 320/192 kbps, or M4A (AAC)
+- **Subtitles (.srt)** — grab manual subtitles and/or YouTube's auto-generated captions (CC) in any languages (`en,hi,fr,…`), converted to `.srt` with ffmpeg
 - **Playlist support** — auto-detected from the URL; saves into a folder named after the playlist with numbered files (`01 - Title.mp4`, …)
 - **Fetch Info** before downloading to confirm you have the right video/playlist
 - Live **progress bar**, download **speed**, and a scrollable **log**
@@ -64,8 +65,9 @@ python -m venv .venv
    - *Video → Best available*: highest resolution + best audio, merged to mp4
    - *Audio → Best (original format)*: exact source audio stream, no re-encode
    - *Audio → MP3 320/192*: converted with ffmpeg
-4. For playlists, keep **Download entire playlist** checked to grab every video (files are numbered in playlist order).
-5. Choose the **Save to** folder (defaults to `~/Downloads`) and hit **Download**.
+4. Want subtitles? Flip on **Subtitles (.srt)**, list the language codes you want (e.g. `en` or `en,hi,fr`), and tick **Include auto-generated (CC)** to fall back to YouTube's auto captions when no manual subs exist. Files are saved next to the video as `Title.en.srt`.
+5. For playlists, keep **Download entire playlist** checked to grab every video (files are numbered in playlist order).
+6. Choose the **Save to** folder (defaults to `~/Downloads`) and hit **Download**.
 
 ## Troubleshooting
 

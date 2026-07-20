@@ -246,7 +246,8 @@ class TubeGrab(ctk.CTk):
         threading.Thread(target=self._fetch_worker, args=(url,), daemon=True).start()
 
     def _fetch_worker(self, url):
-        opts = {"quiet": True, "extract_flat": "in_playlist", "skip_download": True}
+        opts = {"quiet": True, "extract_flat": "in_playlist", "skip_download": True,
+                "socket_timeout": 20}
         try:
             with yt_dlp.YoutubeDL(opts) as ydl:
                 info = ydl.extract_info(url, download=False)
@@ -277,6 +278,10 @@ class TubeGrab(ctk.CTk):
             "noplaylist": not self.playlist_var.get(),
             "quiet": True,
             "no_warnings": True,
+            "retries": 10,
+            "fragment_retries": 10,
+            "socket_timeout": 30,
+            "continuedl": True,
         }
         if self.playlist_var.get():
             ydl_opts["outtmpl"] = os.path.join(

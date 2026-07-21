@@ -302,7 +302,13 @@ class TubeGrab(ctk.CTk):
             # Lets yt-dlp fetch its own JS challenge solver (needed for the
             # signed-in extraction path used when browser cookies are enabled).
             "remote_components": ["ejs:github"],
+            # Pace requests — bursts of playlist downloads trigger YouTube's
+            # rate limiting, which surfaces as HTTP 403 on media URLs.
+            "sleep_interval_requests": 0.5,
         }
+        if self.playlist_var.get():
+            ydl_opts["sleep_interval"] = 1
+            ydl_opts["max_sleep_interval"] = 3
         if self.playlist_var.get():
             ydl_opts["outtmpl"] = os.path.join(
                 outdir, "%(playlist_title)s", "%(playlist_index)02d - %(title)s.%(ext)s")
@@ -343,9 +349,22 @@ class TubeGrab(ctk.CTk):
                          daemon=True).start()
 
     def _download_worker(self, url, ydl_opts):
+        # YouTube media URLs are signed and expire; a 403 mid-download means
+        # "re-extract and try again", not "give up". Fresh YoutubeDL each
+        # attempt = fresh URLs. Resume picks up from the .part file.
         try:
-            with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-                ydl.download([url])
+            for attempt in range(3):
+                try:
+                    with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+                        ydl.download([url])
+                    break
+                except yt_dlp.utils.DownloadError as exc:
+                    if "403" in str(exc) and attempt < 2:
+                        self.events.put(("log",
+                            f"Got HTTP 403 (expired/throttled URL) — refreshing "
+                            f"and resuming (attempt {attempt + 2}/3)…"))
+                        continue
+                    raise
             self.events.put(("done", None))
         except CancelledError:
             self.events.put(("cancelled", None))

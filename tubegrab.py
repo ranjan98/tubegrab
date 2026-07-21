@@ -30,12 +30,14 @@ CARD = ("#f2f2f7", "#232330")
 FIELD = ("#e8e8ee", "#2d2d3a")
 MUTED = ("#6b7280", "#9ca3af")
 
+# Each chain ends in a bare "best" so an unusual format set degrades to the
+# closest available quality instead of failing with "format is not available".
 VIDEO_QUALITIES = {
     "Best available": "bestvideo+bestaudio/best",
-    "Up to 2160p (4K)": "bestvideo[height<=2160]+bestaudio/best[height<=2160]",
-    "Up to 1080p": "bestvideo[height<=1080]+bestaudio/best[height<=1080]",
-    "Up to 720p": "bestvideo[height<=720]+bestaudio/best[height<=720]",
-    "Up to 480p": "bestvideo[height<=480]+bestaudio/best[height<=480]",
+    "Up to 2160p (4K)": "bestvideo[height<=2160]+bestaudio/best[height<=2160]/best",
+    "Up to 1080p": "bestvideo[height<=1080]+bestaudio/best[height<=1080]/best",
+    "Up to 720p": "bestvideo[height<=720]+bestaudio/best[height<=720]/best",
+    "Up to 480p": "bestvideo[height<=480]+bestaudio/best[height<=480]/best",
 }
 
 AUDIO_QUALITIES = {
@@ -301,6 +303,8 @@ class TubeGrab(ctk.CTk):
         if self.playlist_var.get():
             ydl_opts["outtmpl"] = os.path.join(
                 outdir, "%(playlist_title)s", "%(playlist_index)02d - %(title)s.%(ext)s")
+            # One broken video shouldn't abort the rest of the playlist.
+            ydl_opts["ignoreerrors"] = "only_download"
 
         if self.mode_var.get() == "Video":
             ydl_opts["format"] = VIDEO_QUALITIES[self.quality_var.get()]

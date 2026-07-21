@@ -55,8 +55,8 @@ class TubeGrab(ctk.CTk):
         super().__init__()
         ctk.set_appearance_mode("dark")
         self.title(APP_NAME)
-        self.geometry("920x720")
-        self.minsize(820, 640)
+        self.geometry("920x760")
+        self.minsize(820, 680)
 
         self.events = queue.Queue()
         self.cancel_flag = threading.Event()
@@ -174,6 +174,21 @@ class TubeGrab(ctk.CTk):
             fg_color=ACCENT, hover_color=ACCENT_HOVER,
             font=ctk.CTkFont(size=13), state="disabled")
         self.autocc_chk.pack(side="right")
+
+        # Cookies row (for age-restricted / members-only videos)
+        crow = ctk.CTkFrame(opts, fg_color="transparent")
+        crow.pack(fill="x", padx=16, pady=(0, 14))
+        ctk.CTkLabel(crow, text="Browser cookies", text_color=MUTED,
+                     font=ctk.CTkFont(size=13)).pack(side="left", padx=(0, 8))
+        self.cookies_var = tk.StringVar(value="Off")
+        ctk.CTkOptionMenu(
+            crow, variable=self.cookies_var, width=140, height=36,
+            corner_radius=10, fg_color=FIELD, button_color=FIELD,
+            button_hover_color=("#d8d8e0", "#3a3a4a"), text_color=("#111", "#eee"),
+            values=["Off", "Chrome", "Safari", "Firefox", "Edge", "Brave"]).pack(side="left")
+        ctk.CTkLabel(
+            crow, text="sign in as you — needed for age-restricted or members-only videos",
+            text_color=MUTED, font=ctk.CTkFont(size=12)).pack(side="left", padx=(8, 0))
 
         # Action row
         act = ctk.CTkFrame(root, fg_color="transparent")
@@ -300,6 +315,11 @@ class TubeGrab(ctk.CTk):
                     "preferredcodec": codec,
                     "preferredquality": bitrate,
                 }]
+
+        if self.cookies_var.get() != "Off":
+            ydl_opts["cookiesfrombrowser"] = (self.cookies_var.get().lower(),)
+            self._log(f"Using {self.cookies_var.get()} cookies "
+                      "(your OS may ask permission on first use)")
 
         if self.subs_var.get():
             langs = [l.strip() for l in self.sublang_var.get().split(",") if l.strip()]

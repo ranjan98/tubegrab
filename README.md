@@ -22,6 +22,7 @@ A sleek, dark-mode desktop GUI for downloading YouTube **videos**, **audio**, an
 - **Video downloads** with quality caps: Best available, 4K, 1080p, 720p, 480p (merged to `.mp4`)
 - **Audio-only downloads**: best original format, MP3 320/192 kbps, or M4A (AAC)
 - **Subtitles (.srt)** — grab manual subtitles and/or YouTube's auto-generated captions (CC) in any languages (`en,hi,fr,…`), converted to `.srt` with ffmpeg
+- **Browser cookies** — sign in as yourself (Chrome/Safari/Firefox/Edge/Brave) to download age-restricted or members-only videos
 - **Playlist support** — auto-detected from the URL; saves into a folder named after the playlist with numbered files (`01 - Title.mp4`, …)
 - **Fetch Info** before downloading to confirm you have the right video/playlist
 - Live **progress bar**, download **speed**, and a scrollable **log**
@@ -71,6 +72,7 @@ python -m venv .venv
 
 ## Troubleshooting
 
+- **"Sign in to confirm your age"** — set **Browser cookies** to the browser where you're logged in to YouTube and retry. On macOS, Chrome will ask for keychain access ("Always Allow") and Safari needs Full Disk Access for your terminal; Firefox needs neither.
 - **"The page needs to be reloaded" / missing formats** — YouTube changes frequently; update yt-dlp: `.venv/bin/pip install -U yt-dlp`
 - **"No supported JavaScript runtime" warning** — some high-quality formats need a JS runtime; install one with `brew install deno` (optional, downloads still work without it)
 - **Merge/conversion errors** — make sure `ffmpeg` is installed and on your `PATH`

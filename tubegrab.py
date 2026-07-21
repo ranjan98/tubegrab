@@ -299,6 +299,9 @@ class TubeGrab(ctk.CTk):
             "fragment_retries": 10,
             "socket_timeout": 30,
             "continuedl": True,
+            # Lets yt-dlp fetch its own JS challenge solver (needed for the
+            # signed-in extraction path used when browser cookies are enabled).
+            "remote_components": ["ejs:github"],
         }
         if self.playlist_var.get():
             ydl_opts["outtmpl"] = os.path.join(
